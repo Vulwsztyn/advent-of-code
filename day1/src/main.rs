@@ -1,7 +1,8 @@
 use std::env;
 use std::fs;
+use regex::Regex;
 
-fn get_file_patb() -> String {
+fn get_file_path() -> String {
     let args: Vec<String> = env::args().collect();
 
     let file_path = &args[1];
@@ -16,24 +17,35 @@ fn get_file_contents(file_path: String) -> String {
     contents
 }
 
-fn first_digit<T: std::iter::Iterator<Item=char>>(chars: T) -> i32 {
-    for c in chars {
-        if c.is_digit(10) {
-            return c.to_digit(10).unwrap() as i32;
-        }
+
+fn text_to_digit(text: &str) -> i32 {
+    match text {
+        "one" => 1,
+        "two" => 2,
+        "three" => 3,
+        "four" => 4,
+        "five" => 5,
+        "six" => 6,
+        "seven" => 7,
+        "eight" => 8,
+        "nine" => 9,
+        _ => text.parse::<i32>().unwrap(),
     }
-    0
 }
 
 fn code_from_line(line: &str) -> i32 {
-    let first = first_digit(line.chars());
-    let last = first_digit(line.chars().rev());
+    println!("Line: {}", line);
+    let re_digits = Regex::new(r"(\d|one|two|three|four|five|six|seven|eight|nine)").unwrap();
+    let all_digits = re_digits.find_iter(line).map(|x| text_to_digit(x.as_str())).collect::<Vec<i32>>();
+    println!("All digits: {:?}", all_digits);
+    let first = all_digits.first().unwrap();
+    let last = all_digits.last().unwrap();
     println!("First: {}, Last: {}", first, last);
     first*10 + last
 }
 
 fn main() {
-    let file_path = get_file_patb();
+    let file_path = get_file_path();
 
     println!("Filename: {}", file_path);
 
