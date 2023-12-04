@@ -1,6 +1,6 @@
 use std::env;
 use std::fs;
-use regex::Regex;
+use onig::*;
 
 fn get_file_path() -> String {
     let args: Vec<String> = env::args().collect();
@@ -20,28 +20,29 @@ fn get_file_contents(file_path: String) -> String {
 
 fn text_to_digit(text: &str) -> i32 {
     match text {
-        "one" => 1,
-        "two" => 2,
-        "three" => 3,
-        "four" => 4,
-        "five" => 5,
-        "six" => 6,
-        "seven" => 7,
-        "eight" => 8,
-        "nine" => 9,
+        "o" => 1,
+        "t" => 2,
+        "th" => 3,
+        "f" => 4,
+        "fi" => 5,
+        "s" => 6,
+        "se" => 7,
+        "e" => 8,
+        "n" => 9,
         _ => text.parse::<i32>().unwrap(),
     }
 }
 
 fn code_from_line(line: &str) -> i32 {
     println!("Line: {}", line);
-    let re_digits = Regex::new(r"(\d|one|two|three|four|five|six|seven|eight|nine)").unwrap();
-    let all_digits = re_digits.find_iter(line).map(|x| text_to_digit(x.as_str())).collect::<Vec<i32>>();
+    let re_digits = Regex::new(r"(\d|o(?=ne)|t(?=wo)|th(?=ree)|f(?=our)|fi(?=ve)|s(?=ix)|se(?=ven)|e(?=ight)|n(?=ine))").unwrap();
+    let all_digits = re_digits.find_iter(line).into_iter().map(|x| text_to_digit(line.get(x.0..x.1).unwrap())).collect::<Vec<i32>>();
     println!("All digits: {:?}", all_digits);
     let first = all_digits.first().unwrap();
     let last = all_digits.last().unwrap();
     println!("First: {}, Last: {}", first, last);
     first*10 + last
+    
 }
 
 fn main() {
