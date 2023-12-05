@@ -28,9 +28,9 @@ fn get_value(line: &str) -> i32 {
 
 fn line_value(line: &str) -> i32 {
     println!("Line: {}", line);
-    let value = get_value(line);
+    let _value = get_value(line);
     let balls_regex = Regex::new(r"\d+ [rgb]").unwrap();
-    let limits: HashMap<&str, i32> = HashMap::from([
+    let _limits: HashMap<&str, i32> = HashMap::from([
         ("r", 12),
         ("g", 13),
         ("b", 14),
@@ -46,13 +46,20 @@ fn line_value(line: &str) -> i32 {
             |x| x
             .split_whitespace()
             .collect::<Vec<&str>>()
-        )
-        .filter (
-            |x| x[0].parse::<i32>().unwrap() > *limits.get(x[1]).unwrap()
-        )
-        .collect::<Vec<Vec<&str>>>();
+        ).fold(
+            HashMap::new(),
+            |mut acc, x| {
+                let color = x[1];
+                let count = x[0].parse::<i32>().unwrap();
+                let current = acc.get(color).unwrap_or(&0);
+                if count > *current {
+                    acc.insert(color, count);
+                }
+                acc
+            }
+        );
     println!("Balls: {:?}", balls);
-    if balls.len() == 0 { value } else { 0 }
+    balls.values().product::<i32>() 
 }
 
 fn main() {
