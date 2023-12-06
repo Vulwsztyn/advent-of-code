@@ -22,5 +22,17 @@ fn main() {
     println!("Filename: {}", file_path);
 
     let contents = get_file_contents(file_path);
-    println!("Contents: {}", contents);
+    let lines = contents.lines().collect::<Vec<&str>>();
+    lines.iter().enumerate().for_each(
+        |(line_i, line)| {
+            println!("{} {}", line_i, line);
+            let split = line.split('|').collect::<Vec<&str>>();
+            let left_with_header = split.get(0).unwrap();
+            let left_split = left_with_header.split(':').collect::<Vec<&str>>();
+            let left = left_split.get(1).unwrap();
+            let right = split.get(1).unwrap();
+            println!("{}", left);
+            println!("{}", right);
+        }
+    )
 }
