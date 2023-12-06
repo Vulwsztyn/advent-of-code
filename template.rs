@@ -22,5 +22,10 @@ fn main() {
     println!("Filename: {}", file_path);
 
     let contents = get_file_contents(file_path);
-    println!("Contents: {}", contents);
+    let lines = contents.lines().collect::<Vec<&str>>();
+    lines.iter().enumerate().for_each(
+        |(line_i, line)| {
+            println!("{} {}", line_i, line);
+        }
+    )
 }
