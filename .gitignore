@@ -6,3 +6,6 @@
 /**/task2.txt
 
 /.vscode
+
+.idea
+*/.idea
