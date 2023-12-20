@@ -28,5 +28,5 @@ fn main() {
         |(line_i, line)| {
             println!("{} {}", line_i, line);
         }
-    )
+    );
 }
