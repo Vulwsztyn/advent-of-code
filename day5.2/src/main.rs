@@ -47,23 +47,23 @@ fn line_to_entry(line: &str) -> Option<Mapping> {
         destination_range_start: *nums_as_vec.get(0).unwrap(),
         source_range_start: *nums_as_vec.get(1).unwrap(),
         length: *nums_as_vec.get(2).unwrap(),
-    })        
+    })
 }
 
-fn apply_mapping_to_range(mapping: &Mapping, range: &Range) -> Vec<Range> {
+fn apply_mapping_to_range(mapping: &Mapping, range: &Range) -> (Vec<Range>, Vec<Range>) {
     let mapping_end = mapping.source_range_start + mapping.length;
     let range_end = range.start + range.length;
     // if mapping is outside of range
     if mapping.source_range_start > range_end || mapping_end < range.start {
-        return vec![range.clone()];
+        return (vec![], vec![range.clone()]);
     }
     // if mapping contains range
     if mapping.source_range_start <= range.start && mapping_end >= range_end {
         let offset = range.start - mapping.source_range_start;
-        return vec![Range {
+        return (vec![Range {
             start: mapping.destination_range_start + offset,
             length: range.length,
-        }];
+        }], vec![]);
     }
     // if range contains mapping
     if mapping.source_range_start >= range.start && mapping_end <= range_end {
@@ -73,39 +73,37 @@ fn apply_mapping_to_range(mapping: &Mapping, range: &Range) -> Vec<Range> {
         let inner_len = mapping.length;
         let right_start = mapping_end;
         let right_len = range_end - mapping_end;
-        assert_eq!(left_len+inner_len+right_len, range.length)
-        return vec![
+        assert_eq!(left_len + inner_len + right_len, range.length);
+        return (vec![Range {
+            start: inner_start,
+            length: inner_len,
+        }], vec![
             Range {
                 start: left_start,
                 length: left_len,
-            },
-            Range {
-                start: inner_start,
-                length: inner_len,
             },
             Range {
                 start: right_start,
                 length: right_len,
             },
-        ].iter().filter(|x| x.length > 0).collect::<Vec<Range>>();
+        ]);
     }
     // if they have an overlap at the beginning of mapping
-    if (mapping.source_range_start > range.start) {
+    if mapping.source_range_start > range.start {
         assert!(mapping_end > range_end);
         let left_start = range.start;
         let left_len = mapping.source_range_start - range.start;
         let inner_start = mapping.destination_range_start;
         let inner_len = range_end - mapping.source_range_start;
-        return vec![
+        return (vec![Range {
+            start: inner_start,
+            length: inner_len,
+        }, ], vec![
             Range {
                 start: left_start,
                 length: left_len,
             },
-            Range {
-                start: inner_start,
-                length: inner_len,
-            },
-        ];
+        ]);
     }
     // if they have an overlap at the end of mapping
     assert!(mapping.source_range_start < range.start);
@@ -115,20 +113,39 @@ fn apply_mapping_to_range(mapping: &Mapping, range: &Range) -> Vec<Range> {
     let left_len = mapping_end - range.start;
     let right_start = mapping_end;
     let right_len = range_end - mapping_end;
-    return vec![
-        Range {
-            start: left_start,
-            length: left_len,
-        },
+    return (vec![Range {
+        start: left_start,
+        length: left_len,
+    }, ], vec![
         Range {
             start: right_start,
             length: right_len,
         },
-    ];
+    ]);
 }
 
 fn apply_mappings_vector(mappings: &Vec<Mapping>, ranges: &Vec<Range>) -> Vec<Range> {
-    mappings.iter()
+    let mut a = mappings.iter().fold(
+        (vec![], ranges.clone()),
+        |(mapped, not_mapped), mapping| {
+            let (new_mapped_from_mapping, new_not_mapped) = not_mapped.iter().map(|x| {
+                let result =apply_mapping_to_range(&mapping, x);
+                result
+            }).fold(
+                (vec![], vec![]),
+                |(mut a, mut b), (x, y)| {
+                    a.extend(x);
+                    b.extend(y);
+                    (a, b)
+                },
+            );
+            let mut new_mapped = mapped.clone();
+            new_mapped.extend(new_mapped_from_mapping);
+            (new_mapped, new_not_mapped)
+        }
+    );
+    a.0.extend(a.1);
+    a.0
 }
 
 fn main() {
@@ -145,12 +162,24 @@ fn main() {
 
     let list_of_maps = get_list_of_maps(lines);
     seeds.iter().for_each(|x| print!("{} {}  ", x.start, x.length));
-
+    println!("");
+    let mapped = list_of_maps.iter().fold(
+        seeds,
+        |ranges, mappings| {
+            let result = apply_mappings_vector(mappings, &ranges);
+            result.iter().for_each(|x| print!("{} {}  ", x.start, x.length));
+            println!("");
+            result
+        }
+    );
+    mapped.iter().for_each(|x| print!("{} {}  ", x.start, x.length));
+    let starts = mapped.iter().map(|x| x.start).collect::<Vec<u128>>();
+    let min = starts.iter().min().unwrap();
+    println!("\nMin: {}", min);
 }
 
 fn get_list_of_maps(lines: Vec<&str>) -> Vec<Vec<Mapping>> {
     let map_regex = Regex::new(r".*map\:\s*$").unwrap();
-
 
 
     let mut list_of_maps: Vec<Vec<Mapping>> = vec![];
@@ -189,7 +218,7 @@ fn get_seeds(lines: &Vec<&str>) -> Vec<Range> {
         .find_iter(line0)
         .map(|x| line0[x.0..x.1].parse::<u128>().unwrap())
         .collect::<Vec<u128>>();
-    if seeds.len()%2 != 0 {
+    if seeds.len() % 2 != 0 {
         panic!("Uneven number of seeds");
     }
     let (ranges, _) = seeds.iter().fold(
@@ -204,7 +233,7 @@ fn get_seeds(lines: &Vec<&str>) -> Vec<Range> {
                 length: seed,
             });
             (ranges, None)
-        }
+        },
     );
     ranges
 }
