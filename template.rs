@@ -1,5 +1,6 @@
 use std::env;
 use std::fs;
+use std::time::Instant;
 // use onig::*;
 
 fn get_file_path() -> String {
@@ -29,4 +30,8 @@ fn main() {
             println!("{} {}", line_i, line);
         }
     );
+    let start = Instant::now();
+
+    let duration = start.elapsed();
+    println!("Time elapsed: {:?}", duration);
 }
