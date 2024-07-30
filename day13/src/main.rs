@@ -35,11 +35,12 @@ fn main() {
     let maps: Vec<Vec<&str>> = contents.split("\n\n").map(|x| x.lines().collect()).collect();
     let mut result = 0;
     let start = Instant::now();
+    let expected_error_count = 1; // change to 0 for part 1
     maps.iter().for_each(
         |map| {
             let width = map[0].len();
             for i in 0..width-1 {
-                let mut valid = true;
+                let mut error_count = 0;
                 let how_many_to_check = min(i+1, width - i-1);
                 for row in map.iter() {
                     for j in 0..how_many_to_check {
@@ -49,15 +50,17 @@ fn main() {
                         let left_char = row.chars().nth(left).unwrap();
                         let right_char = row.chars().nth(right).unwrap();
                         if left_char != right_char {
-                            valid = false;
-                            break;
+                            error_count += 1;
+                            if error_count > expected_error_count {
+                                break;
+                            }
                         }
                     }
-                    if (!valid) {
+                    if error_count > expected_error_count {
                         break;
                     }
                 }
-                if valid {
+                if error_count == expected_error_count {
                     println!("{} is valid - vertical", i+1);
                     result +=i+1;
                     break;
@@ -65,7 +68,7 @@ fn main() {
             }
             let height = map.len();
             for i in 0..height-1 {
-                let mut valid = true;
+                let mut error_count = 0;
                 let how_many_to_check = min(i+1, height - i-1);
                 for col_i in 0..width {
                     for j in 0..how_many_to_check {
@@ -75,15 +78,17 @@ fn main() {
                         let top_char = map[top].chars().nth(col_i).unwrap();
                         let bottom_char = map[bottom].chars().nth(col_i).unwrap();
                         if top_char != bottom_char {
-                            valid = false;
-                            break;
+                            error_count += 1;
+                            if error_count > expected_error_count {
+                                break;
+                            }
                         }
                     }
-                    if (!valid) {
+                    if error_count > expected_error_count {
                         break;
                     }
                 }
-                if valid {
+                if error_count == expected_error_count {
                     println!("{} is valid - horizontal", i+1);
                     result += (i+1)*100;
                     break;
