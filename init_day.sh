@@ -2,9 +2,9 @@
 cargo new day
 cp ./template.rs ./day/src/main.rs
 cat ./dependencies.toml >> ./day/Cargo.toml
-cp -r ./day6/.idea ./day
+cp -r ./2023/day01.1/.idea ./day
 touch ./day/data.txt
 touch ./day/test.txt
-mv day day$1
-cd day$1
+mv day 2024/day$1
+cd 2024/day$1
 cargo build
