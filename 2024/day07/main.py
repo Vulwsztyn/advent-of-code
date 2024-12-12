@@ -29,7 +29,11 @@ for value, numbers in inputs:
     print(value, numbers)
     possible = [numbers[0]]
     for n in numbers[1:]:
-        possible = [x + n for x in possible] + [x * n for x in possible] + [int(str(x)+str(n)) for x in possible]
+        possible = (
+            [x + n for x in possible]
+            + [x * n for x in possible]
+            + [int(str(x) + str(n)) for x in possible]
+        )
     if value in possible:
         result += value
 print(result)
