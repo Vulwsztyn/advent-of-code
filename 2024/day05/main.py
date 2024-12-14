@@ -2,6 +2,7 @@ from pathlib import Path
 from collections import defaultdict
 from dataclasses import dataclass
 
+
 @dataclass
 class Node:
     value: int
@@ -15,7 +16,7 @@ class Node:
             count += 1
             current = current.next
         return count
-    
+
     def get(self, index):
         current = self
         for i in range(index):
@@ -23,6 +24,7 @@ class Node:
                 return None
             current = current.next
         return current
+
 
 def get_rules_and_updates(text):
     rules = defaultdict(set)
@@ -39,6 +41,7 @@ def get_rules_and_updates(text):
             rules[a].add(b)
     return rules, updates
 
+
 def print_list(head: Node, limit: int | None = None):
     current = head
     count = 0
@@ -49,6 +52,7 @@ def print_list(head: Node, limit: int | None = None):
             break
         current = current.next
     print()
+
 
 def is_valid_helper(previous, index, update, rules):
     current = update[index]
