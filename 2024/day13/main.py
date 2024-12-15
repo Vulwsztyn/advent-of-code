@@ -50,30 +50,18 @@ def part1(input):
 def part2(input):
     result = 0
     for button_a, button_b, prize in input:
+        print((button_a, button_b, prize))
         best = None
         prize = tuple(x + 10000000000000 for x in prize)
-        for button_a_presses in range(button_b[0] * button_b[1]):
+        for button_a_presses in range(button_b[0]):
             if (prize[0] - button_a[0] * button_a_presses) < 0:
-                break
-            if (prize[1] - button_a[1] * button_a_presses) < 0:
                 break
             if (prize[0] - button_a[0] * button_a_presses) % button_b[0] != 0:
                 continue
-            if (prize[1] - button_a[1] * button_a_presses) % button_b[1] != 0:
-                continue
-            button_b_presses_1 = (
-                prize[0] - button_a[0] * button_a_presses
-            ) // button_b[0]
-            button_b_presses_2 = (
-                prize[1] - button_a[1] * button_a_presses
-            ) // button_b[1]
-            if button_b_presses_1 != button_b_presses_2:
-                continue
-            button_b_presses = button_b_presses_1
-
-            current = button_a_presses * 3 + button_b_presses
-            if best is None or current < best:
-                best = current
+            button_b_presses = (prize[0] - button_a[0] * button_a_presses) // button_b[
+                0
+            ]
+            print(button_a_presses, button_b_presses)
         if best is not None:
             result += best
     return result
