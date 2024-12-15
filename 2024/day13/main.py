@@ -15,63 +15,43 @@ def parse_input(text):
     return result
 
 
-def part1(input):
+def solve(input, addendum=0):
     result = 0
     for button_a, button_b, prize in input:
-        best = None
-        for button_a_presses in range(101):
-            if (prize[0] - button_a[0] * button_a_presses) < 0:
-                break
-            if (prize[1] - button_a[1] * button_a_presses) < 0:
-                break
-            if (prize[0] - button_a[0] * button_a_presses) % button_b[0] != 0:
-                continue
-            if (prize[1] - button_a[1] * button_a_presses) % button_b[1] != 0:
-                continue
-            button_b_presses_1 = (
-                prize[0] - button_a[0] * button_a_presses
-            ) // button_b[0]
-            button_b_presses_2 = (
-                prize[1] - button_a[1] * button_a_presses
-            ) // button_b[1]
-            if button_b_presses_1 != button_b_presses_2:
-                continue
-            button_b_presses = button_b_presses_1
-            if button_b_presses >= 101:
-                continue
-            current = button_a_presses * 3 + button_b_presses
-            if best is None or current < best:
-                best = current
-        if best is not None:
-            result += best
+        x1, y1 = button_a
+        x2, y2 = button_b
+        xt, yt = prize
+        xt += addendum
+        yt += addendum
+        # xt=a*x1+b*x2
+        # yt=a*y1+b*y2
+        # solving the equations we get A=(xt*y2-yt*x2)/(x1*y2-y1*x2)
+        q = xt * y2 - yt * x2
+        w = x1 * y2 - y1 * x2
+        if w == 0:
+            print((button_a, button_b, prize))
+            raise "aaa"
+        if q % w != 0:
+            continue
+        a = q // w
+        # b=(yt-a*y1)//y2
+        if y2 == 0:
+            print((button_a, button_b, prize))
+            raise "aaa"
+        e = yt - a * y1
+        if e % y2 != 0:
+            continue
+        b = e // y2
+        result += a * 3 + b
     return result
 
 
-def part2(input):
-    result = 0
-    for button_a, button_b, prize in input:
-        print((button_a, button_b, prize))
-        best = None
-        prize = tuple(x + 10000000000000 for x in prize)
-        for button_a_presses in range(button_b[0]):
-            if (prize[0] - button_a[0] * button_a_presses) < 0:
-                break
-            if (prize[0] - button_a[0] * button_a_presses) % button_b[0] != 0:
-                continue
-            button_b_presses = (prize[0] - button_a[0] * button_a_presses) // button_b[
-                0
-            ]
-            print(button_a_presses, button_b_presses)
-        if best is not None:
-            result += best
-    return result
-
-
-file = Path(__file__).parent / "test.txt"
+file = Path(__file__).parent / "data.txt"
 text = file.read_text().strip().splitlines()
 input = parse_input(text)
 print(input)
-r1 = part1(input)
-r2 = part2(input)
+
+r1 = solve(input)
+r2 = solve(input, 10000000000000)
 print(r1)
 print(r2)
