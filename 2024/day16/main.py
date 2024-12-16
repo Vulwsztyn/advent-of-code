@@ -48,18 +48,28 @@ def print_map(r, e, is_wall, h, w):
     print()
 
 
-file = Path(__file__).parent / "test.txt"
+file = Path(__file__).parent / "data.txt"
 text = file.read_text().strip().splitlines()
 raindeer, end, is_wall, h, w = parse_input(text)
 print_map(raindeer, end, is_wall, h, w)
 
 achieved = {}
-stack = [(raindeer, 0, (0, 1))]
+stack: list[tuple[tuple[int, int], int, tuple[int, int]]] = [(raindeer, 0, (0, 1))]
 cheapest_end = 1e9
+
 while stack:
-    pos, v, current_dir = stack.pop()
-    print(pos, v, current_dir)
-    if (pos, current_dir) in achieved and achieved[(pos, current_dir)] <= v:
+    pos, v, current_dir = stack.pop(0)
+    should_skip = False
+    for dir, add in (
+        (current_dir, 0),
+        ((current_dir[1], current_dir[0]), 1000),
+        ((-current_dir[1], -current_dir[0]), 1000),
+        ((-current_dir[0], -current_dir[1]), 2000),
+    ):
+        if (pos, current_dir) in achieved and achieved[(pos, current_dir)] <= v - add:
+            should_skip = True
+            break
+    if should_skip:
         continue
     if v > cheapest_end:
         continue
@@ -68,13 +78,18 @@ while stack:
         if v < cheapest_end:
             cheapest_end = v
         continue
-    for dir in [[-1, 0], [1, 0], [0, -1], [0, 1]]:
-        dir = tuple(dir)
-        if dir == tuple(-x for x in current_dir):
-            continue
-        new_pos = tuple(pos[i] + dir[i] for i in range(2))
+    for dir in (
+        current_dir,
+        (current_dir[1], current_dir[0]),
+        (-current_dir[1], -current_dir[0]),
+    ):
+        dir: tuple[int, int] = tuple(dir)
+        new_pos: tuple[int, int] = tuple(pos[i] + dir[i] for i in range(2))
         if is_wall(new_pos):
             continue
         stack.append((new_pos, v + 1 + (0 if dir == current_dir else 1000), dir))
-    print(stack)
+    # print(stack)
+    # print(achieved)
+    # input()
+
 print(cheapest_end)
