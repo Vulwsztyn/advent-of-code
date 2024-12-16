@@ -1,5 +1,4 @@
 from pathlib import Path
-import re
 
 
 def find_trails_distinct_9s(pos, text, value):
