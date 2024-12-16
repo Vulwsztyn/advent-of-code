@@ -48,25 +48,40 @@ def print_map(r, e, is_wall, h, w):
     print()
 
 
-file = Path(__file__).parent / "data.txt"
+file = Path(__file__).parent / "test.txt"
 text = file.read_text().strip().splitlines()
 raindeer, end, is_wall, h, w = parse_input(text)
 print_map(raindeer, end, is_wall, h, w)
 
 achieved = {}
-stack: list[tuple[tuple[int, int], int, tuple[int, int]]] = [(raindeer, 0, (0, 1))]
+stack: list[tuple[tuple[int, int], int, tuple[int, int], list[tuple[int, int]]]] = [
+    (raindeer, 0, (0, 1), [])
+]
 cheapest_end = 1e9
-
+best_paths = []
 while stack:
-    pos, v, current_dir = stack.pop(0)
+    pos, v, current_dir, path_until_now = stack.pop(0)
+    new_path = [*path_until_now, pos]
     should_skip = False
+    if pos == end:
+        print(end, v, new_path)
+        if v < cheapest_end:
+            cheapest_end = v
+            best_paths = [new_path]
+            achieved[(pos, current_dir)] = v
+        elif v == cheapest_end:
+            best_paths.append(new_path)
+            achieved[(pos, current_dir)] = v
+        continue
     for dir, add in (
         (current_dir, 0),
         ((current_dir[1], current_dir[0]), 1000),
         ((-current_dir[1], -current_dir[0]), 1000),
         ((-current_dir[0], -current_dir[1]), 2000),
     ):
-        if (pos, current_dir) in achieved and achieved[(pos, current_dir)] <= v - add:
+        if (pos, current_dir) in achieved and achieved[
+            (pos, current_dir)
+        ] <= v - add + 1:
             should_skip = True
             break
     if should_skip:
@@ -74,10 +89,6 @@ while stack:
     if v > cheapest_end:
         continue
     achieved[(pos, current_dir)] = v
-    if pos == end:
-        if v < cheapest_end:
-            cheapest_end = v
-        continue
     for dir in (
         current_dir,
         (current_dir[1], current_dir[0]),
@@ -87,9 +98,13 @@ while stack:
         new_pos: tuple[int, int] = tuple(pos[i] + dir[i] for i in range(2))
         if is_wall(new_pos):
             continue
-        stack.append((new_pos, v + 1 + (0 if dir == current_dir else 1000), dir))
+        stack.append(
+            (new_pos, v + 1 + (0 if dir == current_dir else 1000), dir, new_path)
+        )
     # print(stack)
     # print(achieved)
     # input()
 
 print(cheapest_end)
+print(best_paths)
+print(len(best_paths))
