@@ -48,7 +48,7 @@ def print_map(r, e, is_wall, h, w):
     print()
 
 
-file = Path(__file__).parent / "test.txt"
+file = Path(__file__).parent / "data.txt"
 text = file.read_text().strip().splitlines()
 raindeer, end, is_wall, h, w = parse_input(text)
 print_map(raindeer, end, is_wall, h, w)
@@ -79,9 +79,7 @@ while stack:
         ((-current_dir[1], -current_dir[0]), 1000),
         ((-current_dir[0], -current_dir[1]), 2000),
     ):
-        if (pos, current_dir) in achieved and achieved[
-            (pos, current_dir)
-        ] <= v - add + 1:
+        if (pos, current_dir) in achieved and achieved[(pos, current_dir)] < v - add:
             should_skip = True
             break
     if should_skip:
@@ -108,3 +106,7 @@ while stack:
 print(cheapest_end)
 print(best_paths)
 print(len(best_paths))
+in_best = set()
+for i in best_paths:
+    in_best |= set(i)
+print(len(in_best))
