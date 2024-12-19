@@ -27,9 +27,11 @@ text = file.read_text().strip().splitlines()
 patterns, designs = parse_input(text)
 print(patterns, designs)
 possible_count = 0
-
+all_ways = 0
 for design_i, design in enumerate(designs):
     possible_ways_to_do_this_design = find_all_ways(patterns, design, {})
     if possible_ways_to_do_this_design > 0:
         possible_count += 1
+    all_ways += possible_ways_to_do_this_design
 print(possible_count)
+print(all_ways)
