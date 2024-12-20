@@ -84,20 +84,24 @@ def get_distances(end, is_wall, h, w):
     return distances
 
 
-def get_positions_x_from(from_pos, x):
-    positions = []
+def get_positions_x_from(from_pos, x, include_less_than_x=False):
+    positions = set()
     stack = [(from_pos, 0)]
     visited = set()
     while stack:
-        pos, dist = stack.pop()
+        pos, dist = stack.pop(0)
         if pos in visited:
             continue
         if dist > x:
             continue
         visited.add(pos)
         if dist == x:
-            positions.append(pos)
+            # print(pos,dist)
+            positions.add(pos)
             continue
+        if dist > 1 and include_less_than_x:
+            # print(pos,dist)
+            positions.add(pos)
         for dir in [[-1, 0], [1, 0], [0, -1], [0, 1]]:
             stack.append(((pos[0] + dir[0], pos[1] + dir[1]), dist + 1))
     return positions
@@ -115,6 +119,24 @@ def get_2_step_skips(distances_from_start, distances_from_end, l, is_wall):
                     continue
                 to_end_at_skip = distances_from_end[possible_skip[0]][possible_skip[1]]
                 from_start_to_end = v + 2 + to_end_at_skip
+                if from_start_to_end < l:
+                    skips[l - from_start_to_end].add(((i, j), possible_skip))
+    return skips
+
+
+def get_20_or_less_steps_skips(distances_from_start, distances_from_end, l, is_wall):
+    skips = defaultdict(set)
+    for i, line in enumerate(distances_from_start):
+        for j, v in enumerate(line):
+            if v is None:
+                continue
+            possible_skips = get_positions_x_from((i, j), 20, include_less_than_x=True)
+            for possible_skip in possible_skips:
+                if is_wall(possible_skip):
+                    continue
+                to_end_at_skip = distances_from_end[possible_skip[0]][possible_skip[1]]
+                skip_len = abs(possible_skip[0] - i) + abs(possible_skip[1] - j)
+                from_start_to_end = v + skip_len + to_end_at_skip
                 if from_start_to_end < l:
                     skips[l - from_start_to_end].add(((i, j), possible_skip))
     return skips
@@ -140,4 +162,16 @@ at_least_100_skips_count = 0
 for k in sorted(skips.keys()):
     if k >= 100:
         at_least_100_skips_count += len(skips[k])
+print(at_least_100_skips_count)
+
+skips2 = get_20_or_less_steps_skips(
+    distances_from_start, distances_from_end, from_start_to_end, is_wall
+)
+at_least_100_skips_count = 0
+for k in sorted(skips2.keys()):
+    if k < 50:
+        continue
+    print(k, len(skips2[k]))
+    if k >= 100:
+        at_least_100_skips_count += len(skips2[k])
 print(at_least_100_skips_count)
