@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+from collections import defaultdict
 
 
 def mix(x, y):
@@ -37,7 +38,28 @@ def find_sequence(changes, sequence):
     return None
 
 
-file = Path(__file__).parent / "test.txt"
+def generate_sequences(changes):
+    sequences = set()
+    for change_list in changes:
+        for i in range(len(change_list) - 3):
+            sequences.add(tuple(change_list[i : i + 4]))
+    return sequences
+
+
+def generate_values(changes, prices):
+    values = defaultdict(int)
+    for list_i, change_list in enumerate(changes):
+        sequences = set()
+        for i in range(len(change_list) - 3):
+            key = tuple(change_list[i : i + 4])
+            if key in sequences:
+                continue
+            sequences.add(key)
+            values[key] += prices[list_i][i + 3]
+    return values
+
+
+file = Path(__file__).parent / "data.txt"
 text = [int(x) for x in file.read_text().strip().splitlines()]
 print(text)
 result = 0
@@ -66,3 +88,8 @@ for i, change_seq in enumerate(changes):
     print(i, text[i], to_add)
     result += to_add
 print(result)
+sequences = generate_sequences(changes)
+print(len(sequences))
+values = generate_values(changes, prices)
+print(values)
+print(max(values.values()))
